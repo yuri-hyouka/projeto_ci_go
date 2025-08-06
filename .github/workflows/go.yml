@@ -24,8 +24,20 @@ jobs:
     - name: Inicia Banco de Dados
       run: docker compose up -d postgres
       
-    - name: Lint
-      run: docker run --rm -itv $(CURDIR):/app -w /app golangci/golangci-lint golangci-lint run controllers/ database/ models/ routes/
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: v2.1
+        args: controllers/ database/ models/ routes/
 
     - name: Test
-      run: go test -v main_test.go
+      run: DB_HOST=${{ secrets.DB_HOST }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} DB_PORT=${{ secrets.DB_PORT }} go test -v main_test.go
+
+    - name: Build
+      run: go build main.go
+
+    - name: Projeto Compliado
+      uses: actions/upload-artifact@v4
+      with:
+        name: projeto_compilado
+        path: main
